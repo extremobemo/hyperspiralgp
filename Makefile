@@ -5,9 +5,9 @@
 
 TARGET = Hyper-Spiral-GP.elf
 OBJS = main.o romdisk.o
-KOS_ROMDISK_DIR = romdisk skybox.vs skybox.fs
+KOS_ROMDISK_DIR = romdisk
 
-KOS_CFLAGS += -I${KOS_PORTS}/include/raylib -I/home/extremobemo/Desktop/playground/spiraldrive/r-zero/include
+KOS_CFLAGS += -I${KOS_PORTS}/include/raylib
 
 all: $(TARGET)
 
