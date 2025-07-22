@@ -19,6 +19,9 @@ void UnloadTrack(Track *track);
 // New function for a figure 8 track
 void InitFigure8Track(Track *track, float loopRadius, float trackWidth, int segmentsPerLoop, float heightVariation, Texture2D trackTexture);
 
+// New function for a helix track
+void InitHelixTrack(Track *track, float length, float width, int segmentsPerTurn, float heightPerTurn, int numTurns, float twistAmount, Texture2D trackTexture);
+
 // Function to get track surface info
 Vector3 GetTrackSurfaceInfo(Vector3 shipPos, Mesh trackMesh, float *outHeight);
 
