@@ -17,24 +17,57 @@
 Vector3 GetTrackSurfaceInfo(Vector3 shipPos, Mesh trackMesh, float *outHeight)
 {
     Vector3 normal = { 0.0f, 1.0f, 0.0f }; // Default to flat normal
-    *outHeight = 0.0f; // Default height
+    *outHeight = shipPos.y; // Default to current ship height if no hit
 
-    // Create a ray from above the ship, pointing downwards
-    Ray ray = { 0 };
-    ray.position = (Vector3){ shipPos.x, 100.0f, shipPos.z }; // Start ray from a safe height above the track
-    ray.direction = (Vector3){ 0.0f, -1.0f, 0.0f }; // Pointing straight down
+    // Define ray parameters
+    float rayOffset = 50.0f; // Offset for ray start above/below ship
 
-    // Get collision info between the ray and the track mesh
-    // Assuming trackModel.transform is identity, otherwise it should be passed here
-    RayCollision collision = GetRayCollisionMesh(ray, trackMesh, MatrixIdentity());
+    // Ray 1: From above, pointing downwards
+    Ray rayDown = { 0 };
+    rayDown.position = (Vector3){ shipPos.x, shipPos.y + rayOffset, shipPos.z };
+    rayDown.direction = (Vector3){ 0.0f, -1.0f, 0.0f };
 
-    if (collision.hit)
+    // Ray 2: From below, pointing upwards
+    Ray rayUp = { 0 };
+    rayUp.position = (Vector3){ shipPos.x, shipPos.y - rayOffset, shipPos.z };
+    rayUp.direction = (Vector3){ 0.0f, 1.0f, 0.0f };
+
+    RayCollision collisionDown = GetRayCollisionMesh(rayDown, trackMesh, MatrixIdentity());
+    RayCollision collisionUp = GetRayCollisionMesh(rayUp, trackMesh, MatrixIdentity());
+
+    bool hitDown = collisionDown.hit;
+    bool hitUp = collisionUp.hit;
+
+    if (hitDown && hitUp)
     {
-        *outHeight = collision.point.y;
-        normal = collision.normal;
+        // Both rays hit, choose the one closer to the ship's current Y position
+        float distDown = fabsf(shipPos.y - collisionDown.point.y);
+        float distUp = fabsf(shipPos.y - collisionUp.point.y);
+
+        if (distDown < distUp)
+        {
+            *outHeight = collisionDown.point.y;
+            normal = collisionDown.normal;
+        }
+        else
+        {
+            *outHeight = collisionUp.point.y;
+            normal = collisionUp.normal;
+        }
     }
-    // If no hit, it means the ship is off the track or the ray started too low.
-    // For this example, we assume the ship is always over the track.
+    else if (hitDown)
+    {
+        // Only rayDown hit
+        *outHeight = collisionDown.point.y;
+        normal = collisionDown.normal;
+    }
+    else if (hitUp)
+    {
+        // Only rayUp hit
+        *outHeight = collisionUp.point.y;
+        normal = collisionUp.normal;
+    }
+    // If no hit, outHeight remains shipPos.y (default) and normal remains {0,1,0}
 
     return normal;
 }
@@ -160,7 +193,7 @@ Mesh GenMeshFigure8Track(float loopRadius, float trackWidth, int segmentsPerLoop
         float z = loopRadius * sinf(t) * cosf(t); // This creates a figure 8 shape
 
         // Calculate height variation
-        float currentHeight = heightVariation * sinf(t * 2.0f); // Simple sine wave for height
+        float currentHeight = heightVariation * cosf(t); // Use cosine for overpass/underpass at intersection
 
         // Waypoint at the center of the track segment
         (*outWaypoints)[i].x = x;
@@ -244,9 +277,11 @@ void InitFigure8Track(Track *track, float loopRadius, float trackWidth, int segm
     track->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = track->texture;
 }
 
+
+
 void DrawTrack(Track *track)
 {
-    DrawModel(track->model, (Vector3){ 0.0f, 0.0f, 0.0f }, 1.0f, DARKGRAY);
+    DrawModel(track->model, (Vector3){ 0.0f, 0.0f, 0.0f }, 1.0f, WHITE); // Simplified drawing with 1.0f scale
 }
 
 void UnloadTrack(Track *track)
