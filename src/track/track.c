@@ -281,7 +281,7 @@ void InitFigure8Track(Track *track, float loopRadius, float trackWidth, int segm
 
 void DrawTrack(Track *track)
 {
-    DrawModel(track->model, (Vector3){ 0.0f, 0.0f, 0.0f }, 1.0f, DARKGRAY);
+    DrawModel(track->model, (Vector3){ 0.0f, 0.0f, 0.0f }, 1.0f, WHITE); // Simplified drawing with 1.0f scale
 }
 
 void UnloadTrack(Track *track)

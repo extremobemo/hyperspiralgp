@@ -4,6 +4,7 @@
 #include <rlgl.h>
 #include <stdlib.h>
 #include <float.h>
+#include <kos/dbglog.h>
 #include "ship/ship.h"
 #include "track/track.h"
 
@@ -102,7 +103,7 @@ int main(int argc, char** argv) {
 
     // InitShip(&playerShip, shipModel, shipTexture);
     
-    camera.position = (Vector3){ 0.0f, 10.0f, -25.0f }; // Fixed camera position, moved up and back
+    camera.position = (Vector3){ 0.0f, 100.0f, -250.0f }; // Adjusted camera position for large track
     camera.target = (Vector3){ 0.0f, 2.0f, 0.0f };      // Fixed camera target (at ship's height)
     camera.up = (Vector3){ 0.0f, 2.0f, 0.0f };          // Camera up vector (rotation towards target)
     camera.fovy = 95.0f;                                // Camera field-of-view Y
@@ -130,8 +131,15 @@ int main(int argc, char** argv) {
                     // Initialize track based on selection
                     if (currentTrackSelection == 0)
                     {
-                        // Circular track
-                        InitTrack(&gameTrack, 400.0f, 200.0f, 100, 40.0f, 0.0f, trackTexture);
+                        // Load rainbow_road.obj
+                        gameTrack.model = LoadModel("/rd/rainbow_road.obj");
+                        gameTrack.texture = LoadTexture("/rd/Finish_Road.jpg"); // Assuming this texture
+                        GenTextureMipmaps(&gameTrack.texture);
+                        SetTextureFilter(gameTrack.texture, TEXTURE_FILTER_BILINEAR);
+                        SetTextureWrap(gameTrack.texture, TEXTURE_WRAP_CLAMP);
+                        gameTrack.model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = gameTrack.texture;
+                        gameTrack.waypoints = NULL; // No waypoints for loaded model
+                        gameTrack.waypointCount = 0; // No waypoints for loaded model
                     }
                     else
                     {
